@@ -2,18 +2,16 @@ package com.wintig.test;
 
 
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.ComponentScan;
 
 import java.util.concurrent.locks.ReentrantLock;
 
+@ComponentScan("com.wintig")
 public class Test {
 
 	public static void main(String[] args) {
 		AnnotationConfigApplicationContext
-				applicationContext = new AnnotationConfigApplicationContext();
-
-
-		ReentrantLock lock = new ReentrantLock();
-		lock.lock();
+				applicationContext = new AnnotationConfigApplicationContext(Test.class);
 
 	}
 
