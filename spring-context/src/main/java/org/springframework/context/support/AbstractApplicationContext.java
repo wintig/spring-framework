@@ -516,17 +516,26 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	@Override
 	public void refresh() throws BeansException, IllegalStateException {
 		synchronized (this.startupShutdownMonitor) {
-			// Prepare this context for refreshing.
+			// 0 Prepare this context for refreshing.
 			prepareRefresh();
 
 			// Tell the subclass to refresh the internal bean factory.
+			/**
+			 *
+			 * 创建BeanFactory，并且把定义的Bean的信息读取到了BeanDefinition中
+			 *
+			 * 1：创建BeanFactory对象
+			 * 2：xml解析
+			 * 3：把解析出来的xml标签封装成BeanDefinition对象
+			 */
 			ConfigurableListableBeanFactory beanFactory = obtainFreshBeanFactory();
 
 			// Prepare the bean factory for use in this context.
+			// 其实就是往我们获取的BeanFactory中，设置一个对象值，忽略一些属性值
 			prepareBeanFactory(beanFactory);
 
 			try {
-				// Allows post-processing of the bean factory in context subclasses.
+				// <null> Allows post-processing of the bean factory in context subclasses.
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
@@ -536,19 +545,19 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
-				initMessageSource();
+				initMessageSource(); // 执行国际化处理
 
 				// Initialize event multicaster for this context.
-				initApplicationEventMulticaster();
+				initApplicationEventMulticaster();	// 初始化多波器
 
-				// Initialize other special beans in specific context subclasses.
+				// <null> Initialize other special beans in specific context subclasses.
 				onRefresh();
 
 				// Check for listener beans and register them.
-				registerListeners();
+				registerListeners();  // 注册监听器到多波器
 
 				// Instantiate all remaining (non-lazy-init) singletons.
-				finishBeanFactoryInitialization(beanFactory);
+				finishBeanFactoryInitialization(beanFactory); // 完成所有非懒加载的单例的实例化工作
 
 				// Last step: publish corresponding event.
 				finishRefresh();
@@ -585,9 +594,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	protected void prepareRefresh() {
 		// Switch to active.
 		this.startupDate = System.currentTimeMillis();
-		this.closed.set(false);
-		this.active.set(true);
+		this.closed.set(false);	// 设置关闭标志
+		this.active.set(true); // 设置活跃标志
 
+		// 日志设置
 		if (logger.isDebugEnabled()) {
 			if (logger.isTraceEnabled()) {
 				logger.trace("Refreshing " + this);
@@ -597,7 +607,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 			}
 		}
 
-		// Initialize any placeholder property sources in the context environment.
+		// null Initialize any placeholder property sources in the context environment.
 		initPropertySources();
 
 		// Validate that all properties marked as required are resolvable:
@@ -635,6 +645,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * @see #getBeanFactory()
 	 */
 	protected ConfigurableListableBeanFactory obtainFreshBeanFactory() {
+		/**
+		 * 此处使用了模板设计模式
+		 */
 		refreshBeanFactory();
 		return getBeanFactory();
 	}
@@ -876,7 +889,7 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
-		beanFactory.preInstantiateSingletons();
+		beanFactory.preInstantiateSingletons();	// * 实例化
 	}
 
 	/**
