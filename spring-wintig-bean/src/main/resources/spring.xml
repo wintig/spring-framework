@@ -6,6 +6,9 @@
 
 	<bean class="com.wintig.bean.Student" id="student" scope="singleton" primary="true"/>
 
-
+	<bean class="com.wintig.Autowired原理.AlibabaGroup" id="alibabaGroup">
+		<property name="userWintig" ref="user"></property>
+	</bean>
+	<bean class="com.wintig.Autowired原理.User" id="user"/>
 
 </beans>
