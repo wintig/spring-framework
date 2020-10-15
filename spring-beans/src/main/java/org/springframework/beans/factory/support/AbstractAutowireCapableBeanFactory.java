@@ -513,6 +513,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		}
 
 		try {
+			// 创建bean
 			Object beanInstance = doCreateBean(beanName, mbdToUse, args);
 			if (logger.isTraceEnabled()) {
 				logger.trace("Finished creating instance of bean '" + beanName + "'");
@@ -553,10 +554,11 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			instanceWrapper = this.factoryBeanInstanceCache.remove(beanName);
 		}
 		if (instanceWrapper == null) {
-			// *
+			// 创建bean实例，推断构造方法，实例化，还没有完成属性注入，属性注入在下面
 			instanceWrapper = createBeanInstance(beanName, mbd, args);
 		}
-		// 到此为止，只是创建了一个Java Bean
+
+		// 到此为止，只是创建了一个Java Bean   原始对象
 		Object bean = instanceWrapper.getWrappedInstance();
 
 		Class<?> beanType = instanceWrapper.getWrappedClass();
@@ -580,6 +582,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		// Eagerly cache singletons to be able to resolve circular references
 		// even when triggered by lifecycle interfaces like BeanFactoryAware.
+		// 如果当前创建的是单例bean，并且允许循环依赖，并且还在创建中，那么则提早暴露
 		boolean earlySingletonExposure = (mbd.isSingleton() && this.allowCircularReferences &&
 				isSingletonCurrentlyInCreation(beanName));
 		if (earlySingletonExposure) {
@@ -587,14 +590,20 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 				logger.trace("Eagerly caching bean '" + beanName +
 						"' to allow for resolving potential circular references");
 			}
+			// 此时的bean还没有完成属性注入，是一个非常简单的对象
+			// 构造一个对象工厂添加到singletonFactories（三级缓存）中
+			// 第四次调用后置处理器
 			addSingletonFactory(beanName, () -> getEarlyBeanReference(beanName, mbd, bean));
 		}
 
 		// Initialize the bean instance.
+		// 对象已经暴露出去了
 		Object exposedObject = bean;
 		try {
-			// 注入属性的代码应该再这里
+			// 填充属性，执行到这里，对象已经被实例化出来了，自动注入就在这里
 			populateBean(beanName, mbd, instanceWrapper);
+
+			// 执行Aware，这里会进行AOP，得到一个代理对象
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
 		catch (Throwable ex) {
@@ -1788,10 +1797,13 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 
 		Object wrappedBean = bean;
 		if (mbd == null || !mbd.isSynthetic()) {
+			// 执行初始化前的BeanPostProcessor
+			// @PostConstrict 它是在属性注入后执行的
 			wrappedBean = applyBeanPostProcessorsBeforeInitialization(wrappedBean, beanName);
 		}
 
 		try {
+			// 执行初始化方法 InitializingBean  init-method(xml)
 			invokeInitMethods(beanName, wrappedBean, mbd);
 		}
 		catch (Throwable ex) {
@@ -1800,6 +1812,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 					beanName, "Invocation of init method failed", ex);
 		}
 		if (mbd == null || !mbd.isSynthetic()) {
+			// 执行初始化后的BeanPostProcessor
+			// 完成代理-aop
 			wrappedBean = applyBeanPostProcessorsAfterInitialization(wrappedBean, beanName);
 		}
 

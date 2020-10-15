@@ -387,10 +387,10 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 			throws BeanDefinitionStoreException {
 
 		try {
-			// 流对象转化成Doc对象
+			// - 流对象转化成Document对象
 			Document doc = doLoadDocument(inputSource, resource);
 
-			// 5 根据解析出来的doc对象，拿到里面的标签元素封装成BeanDefinition
+			// + 根据解析出来的doc对象，拿到里面的标签元素封装成BeanDefinition
 			int count = registerBeanDefinitions(doc, resource);
 			if (logger.isDebugEnabled()) {
 				logger.debug("Loaded " + count + " bean definitions from " + resource);
@@ -512,7 +512,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		// 又来一记委托模式，BeanDefinitionDocumentReader委托这个类进行document解析
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
 		int countBefore = getRegistry().getBeanDefinitionCount();
-		//
+		// +
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
 		return getRegistry().getBeanDefinitionCount() - countBefore;
 	}

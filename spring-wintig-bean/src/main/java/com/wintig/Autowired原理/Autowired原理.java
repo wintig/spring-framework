@@ -11,8 +11,8 @@ public class Autowired原理 {
 	 * 注入模型有4种
 	 * no：不采用自动注入
 	 * byType：根据类型去找
-	 * byName：根据你提供的构造方法
-	 * construct：根据构造方法
+	 * byName：根据名字去找
+	 * construct：根据构造方法去找，选择最多的那个构造方法
 	 *
 	 * byName 和 byType只能说是注入模型，找Bean和注入Bean是不一样的技术
 	 *
