@@ -315,9 +315,11 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		// + 解析document，把里面的字段封装成BeanDefinition，
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
+			// - 装饰者模式，加上spi设计思想
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
 				// Register the final decorated instance.
+				// + 完成document到BeanDefinition对象转化后，对BeanDefinition对象进行缓存注册
 				BeanDefinitionReaderUtils.registerBeanDefinition(bdHolder, getReaderContext().getRegistry());
 			}
 			catch (BeanDefinitionStoreException ex) {

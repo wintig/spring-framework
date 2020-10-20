@@ -146,6 +146,7 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	private boolean abstractFlag = false;
 
+	// 是否懒加载
 	@Nullable
 	private Boolean lazyInit;
 
@@ -158,6 +159,8 @@ public abstract class AbstractBeanDefinition extends BeanMetadataAttributeAccess
 
 	private boolean autowireCandidate = true;
 
+	// 如果一个类的实现方式有很多，然后给其中一个实现类上家一个@Primary
+	// 其他类如果通过类型装配，就是优先判定加了次注解的
 	private boolean primary = false;
 
 	private final Map<String, AutowireCandidateQualifier> qualifiers = new LinkedHashMap<>();
