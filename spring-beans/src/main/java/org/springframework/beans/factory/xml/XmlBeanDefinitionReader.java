@@ -307,6 +307,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 	 */
 	@Override
 	public int loadBeanDefinitions(Resource resource) throws BeanDefinitionStoreException {
+		// EncodedResource带编码的对Resource对象
 		return loadBeanDefinitions(new EncodedResource(resource));
 	}
 
@@ -330,7 +331,9 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 					"Detected cyclic loading of " + encodedResource + " - check your import definitions!");
 		}
 
+		// 获取Resource对象中的xml文件流对象
 		try (InputStream inputStream = encodedResource.getResource().getInputStream()) {
+			//InputSource是jdk中的sax xml文件解析对象
 			InputSource inputSource = new InputSource(inputStream);
 			if (encodedResource.getEncoding() != null) {
 				inputSource.setEncoding(encodedResource.getEncoding());
@@ -513,7 +516,7 @@ public class XmlBeanDefinitionReader extends AbstractBeanDefinitionReader {
 		// 又来一记委托模式，BeanDefinitionDocumentReader委托这个类进行document解析
 		BeanDefinitionDocumentReader documentReader = createBeanDefinitionDocumentReader();
 		int countBefore = getRegistry().getBeanDefinitionCount();
-		// +
+		// + createReaderContext(resource)
 		documentReader.registerBeanDefinitions(doc, createReaderContext(resource));
 		return getRegistry().getBeanDefinitionCount() - countBefore;
 	}

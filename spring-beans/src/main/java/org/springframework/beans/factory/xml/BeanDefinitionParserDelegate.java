@@ -412,11 +412,13 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public BeanDefinitionHolder parseBeanDefinitionElement(Element ele, @Nullable BeanDefinition containingBean) {
-		String id = ele.getAttribute(ID_ATTRIBUTE);
-		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);
+		String id = ele.getAttribute(ID_ATTRIBUTE);			// 获取id属性
+		String nameAttr = ele.getAttribute(NAME_ATTRIBUTE);		// 获取name属性  name="wintig"
 
+		// name就是他的别名
 		List<String> aliases = new ArrayList<>();
 		if (StringUtils.hasLength(nameAttr)) {
+			// 可以有多个别名
 			String[] nameArr = StringUtils.tokenizeToStringArray(nameAttr, MULTI_VALUE_ATTRIBUTE_DELIMITERS);
 			aliases.addAll(Arrays.asList(nameArr));
 		}
@@ -467,6 +469,7 @@ public class BeanDefinitionParserDelegate {
 				}
 			}
 			String[] aliasesArray = StringUtils.toStringArray(aliases);
+			// 把AbstractBeanDefinition封装成了BeanDefinitionHolder，也就多了个beanName
 			return new BeanDefinitionHolder(beanDefinition, beanName, aliasesArray);
 		}
 
@@ -523,10 +526,17 @@ public class BeanDefinitionParserDelegate {
 
 			// 解析bean中的meta标签
 			parseMetaElements(ele, bd);
+
+			// 解析bean中的lookup-method标签  大概意思就是方法塞一个返回值
 			parseLookupOverrideSubElements(ele, bd.getMethodOverrides());
+
+			// 解析bean中的replaced-method标签  不改变原有方法情况下，修改一个方法的实现
 			parseReplacedMethodSubElements(ele, bd.getMethodOverrides());
 
+			// 解析bean中的constructor-arg标签	@Value
 			parseConstructorArgElements(ele, bd);
+
+			// 解析bean中的property标签
 			parsePropertyElements(ele, bd);
 			parseQualifierElements(ele, bd);
 
@@ -565,19 +575,20 @@ public class BeanDefinitionParserDelegate {
 			error("Old 1.x 'singleton' attribute in use - upgrade to 'scope' declaration", ele);
 		}
 		else if (ele.hasAttribute(SCOPE_ATTRIBUTE)) {
-			bd.setScope(ele.getAttribute(SCOPE_ATTRIBUTE));
+			bd.setScope(ele.getAttribute(SCOPE_ATTRIBUTE));	// scope属性
 		}
 		else if (containingBean != null) {
 			// Take default from containing bean in case of an inner bean definition.
 			bd.setScope(containingBean.getScope());
 		}
 
-		// 是否是抽象的Bean
+		// 是否是abstract抽象的Bean
 		if (ele.hasAttribute(ABSTRACT_ATTRIBUTE)) {
 			bd.setAbstract(TRUE_VALUE.equals(ele.getAttribute(ABSTRACT_ATTRIBUTE)));
 		}
 
 		String lazyInit = ele.getAttribute(LAZY_INIT_ATTRIBUTE);
+		// 是否懒加载
 		if (isDefaultValue(lazyInit)) {
 			lazyInit = this.defaults.getLazyInit();
 		}
@@ -592,6 +603,9 @@ public class BeanDefinitionParserDelegate {
 			bd.setDependsOn(StringUtils.tokenizeToStringArray(dependsOn, MULTI_VALUE_ATTRIBUTE_DELIMITERS));
 		}
 
+
+		// autowire-candidate：采用xml格式配置bean时，将autowire-candidate设置为false，这样容器在查找自动装配对象时
+		// 将不会考虑改bean，它不会被考虑作为其他bean自动装备的候选者，但是该bean本身还可以使用自动装配来注入其他的bean
 		String autowireCandidate = ele.getAttribute(AUTOWIRE_CANDIDATE_ATTRIBUTE);
 		if (isDefaultValue(autowireCandidate)) {
 			String candidatePattern = this.defaults.getAutowireCandidates();
@@ -608,6 +622,7 @@ public class BeanDefinitionParserDelegate {
 			bd.setPrimary(TRUE_VALUE.equals(ele.getAttribute(PRIMARY_ATTRIBUTE)));
 		}
 
+		// init-method：bean实例化后调用的方法
 		if (ele.hasAttribute(INIT_METHOD_ATTRIBUTE)) {
 			String initMethodName = ele.getAttribute(INIT_METHOD_ATTRIBUTE);
 			bd.setInitMethodName(initMethodName);
@@ -617,6 +632,7 @@ public class BeanDefinitionParserDelegate {
 			bd.setEnforceInitMethod(false);
 		}
 
+		// destroy-method：bean销毁时候调用的
 		if (ele.hasAttribute(DESTROY_METHOD_ATTRIBUTE)) {
 			String destroyMethodName = ele.getAttribute(DESTROY_METHOD_ATTRIBUTE);
 			bd.setDestroyMethodName(destroyMethodName);
@@ -1386,6 +1402,8 @@ public class BeanDefinitionParserDelegate {
 	 */
 	@Nullable
 	public BeanDefinition parseCustomElement(Element ele, @Nullable BeanDefinition containingBd) {
+		// <context:component-scan/>
+		// 根据标签拿到namespaceUri，根据namespaceUri拿到对应的NamespaceHandler处理类
 		String namespaceUri = getNamespaceURI(ele);
 		if (namespaceUri == null) {
 			return null;
@@ -1395,6 +1413,7 @@ public class BeanDefinitionParserDelegate {
 			error("Unable to locate Spring NamespaceHandler for XML schema namespace [" + namespaceUri + "]", ele);
 			return null;
 		}
+		// 解析默认标签的时候调用的decorate（装饰），而这里调用的是parse（解析）
 		return handler.parse(ele, new ParserContext(this.readerContext, this, containingBd));
 	}
 
@@ -1425,6 +1444,7 @@ public class BeanDefinitionParserDelegate {
 		NamedNodeMap attributes = ele.getAttributes();
 		for (int i = 0; i < attributes.getLength(); i++) {
 			Node node = attributes.item(i);
+			// 装饰，如果需要
 			finalDefinition = decorateIfRequired(node, finalDefinition, containingBd);
 		}
 
@@ -1451,13 +1471,15 @@ public class BeanDefinitionParserDelegate {
 	public BeanDefinitionHolder decorateIfRequired(
 			Node node, BeanDefinitionHolder originalDef, @Nullable BeanDefinition containingBd) {
 
-		// 根据node获取node的namespace，形如：http://www.springframework.org/schema/p
+		// 根据node（就是p前缀的标签）获取node的namespace，形如：http://www.springframework.org/schema/p
+		// 在/META-INF/spring.handles中寻找 namespace的处理类
 		String namespaceUri = getNamespaceURI(node);
 		if (namespaceUri != null && !isDefaultNamespace(namespaceUri)) {
 
 			// 这里有SPI服务发现的思想，根据配置文件获取namespaceUri对应的处理类
 			NamespaceHandler handler = this.readerContext.getNamespaceHandlerResolver().resolve(namespaceUri);
 			if (handler != null) {
+				// 调用NamespaceHandler处理类的decorate方法，开始具体装饰过程，并返回装饰的对象
 				BeanDefinitionHolder decorated =
 						handler.decorate(node, originalDef, new ParserContext(this.readerContext, this, containingBd));
 				if (decorated != null) {

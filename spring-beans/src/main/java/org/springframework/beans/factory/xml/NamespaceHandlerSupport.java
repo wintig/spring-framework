@@ -81,6 +81,9 @@ public abstract class NamespaceHandlerSupport implements NamespaceHandler {
 	@Nullable
 	private BeanDefinitionParser findParserForElement(Element element, ParserContext parserContext) {
 		String localName = parserContext.getDelegate().getLocalName(element);
+		// 对于component-scan的方法
+		// 调用Handler方法的init，会把component-scan对应的处理类建立映射，然后把映射存入parsers(HashMap)
+		// 所以这里通过key就可以找到对应的处理类
 		BeanDefinitionParser parser = this.parsers.get(localName);
 		if (parser == null) {
 			parserContext.getReaderContext().fatal(

@@ -994,11 +994,12 @@ public class DefaultListableBeanFactory extends AbstractAutowireCapableBeanFacto
 			}
 			else {
 				// Still in startup registration phase
-				// 把beanDefinition缓存到map中
+				// 把beanDefinition缓存到map中，装的是name和beanDefinition的映射关系
 				this.beanDefinitionMap.put(beanName, beanDefinition);
 
-				// 把beanName放到beanDefinitionNames List中
-				this.beanDefinitionNames.add(beanName);
+				// 把beanName放到beanDefinitionNames这个List中，装的是所有beanDefinition的名称（id属性）
+				// bean实例化的时候需要
+				this.beanDefinitionNames.add(beanName);	//
 				removeManualSingletonName(beanName);
 			}
 			this.frozenBeanDefinitionNames = null;

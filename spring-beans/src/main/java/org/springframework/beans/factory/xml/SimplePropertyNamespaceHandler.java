@@ -68,9 +68,13 @@ public class SimplePropertyNamespaceHandler implements NamespaceHandler {
 	@Override
 	public BeanDefinitionHolder decorate(Node node, BeanDefinitionHolder definition, ParserContext parserContext) {
 		if (node instanceof Attr) {
+			// 获取标签 p:name="wintig"
 			Attr attr = (Attr) node;
+			// 获取属性名 name
 			String propertyName = parserContext.getDelegate().getLocalName(attr);
+			// 获取属性 wintig
 			String propertyValue = attr.getValue();
+			// 获取MutablePropertyValues对象
 			MutablePropertyValues pvs = definition.getBeanDefinition().getPropertyValues();
 			if (pvs.contains(propertyName)) {
 				parserContext.getReaderContext().error("Property '" + propertyName + "' is already defined using " +
@@ -81,6 +85,7 @@ public class SimplePropertyNamespaceHandler implements NamespaceHandler {
 				pvs.add(Conventions.attributeNameToPropertyName(propertyName), new RuntimeBeanReference(propertyValue));
 			}
 			else {
+				// 把name="wintig"封装到MutablePropertyValues
 				pvs.add(Conventions.attributeNameToPropertyName(propertyName), propertyValue);
 			}
 		}

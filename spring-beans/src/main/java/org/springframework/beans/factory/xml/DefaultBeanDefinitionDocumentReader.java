@@ -93,7 +93,7 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	@Override
 	public void registerBeanDefinitions(Document doc, XmlReaderContext readerContext) {
 		this.readerContext = readerContext;
-		// 主要看这个方法，吧root节点传进去
+		// 主要看这个方法，把root节点传进去
 		doRegisterBeanDefinitions(doc.getDocumentElement());
 	}
 
@@ -147,9 +147,10 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 			}
 		}
 
+		// null方法，给子类实现
 		preProcessXml(root);
 
-		// 5
+		// + 标签解析过程
 		parseBeanDefinitions(root, this.delegate);
 		postProcessXml(root);
 
@@ -172,16 +173,18 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 	protected void parseBeanDefinitions(Element root, BeanDefinitionParserDelegate delegate) {
 		if (delegate.isDefaultNamespace(root)) {
 			NodeList nl = root.getChildNodes();
+			// 从xml的根节点开始，循环的解析所有的变迁
 			for (int i = 0; i < nl.getLength(); i++) {
 				Node node = nl.item(i);
 				if (node instanceof Element) {
 					Element ele = (Element) node;
+					// 是否有namespace，如果拿不到说明是默认标签
 					if (delegate.isDefaultNamespace(ele)) {
-						// 默认标签解析
+						// 默认标签解析 <bean>
 						parseDefaultElement(ele, delegate);
 					}
 					else {
-						// 自定义标签解析
+						// 自定义标签解析	有前缀的 <context:component-scan base-package="com.wintig"/>
 						delegate.parseCustomElement(ele);
 					}
 				}
@@ -315,7 +318,10 @@ public class DefaultBeanDefinitionDocumentReader implements BeanDefinitionDocume
 		// + 解析document，把里面的字段封装成BeanDefinition，
 		BeanDefinitionHolder bdHolder = delegate.parseBeanDefinitionElement(ele);
 		if (bdHolder != null) {
-			// - 装饰者模式，加上spi设计思想
+			// - 装饰者模式，加上spi设计思想；对bean里面的属性进行了修改或者说是增强，主要理解思想
+			// 1：首先获取/META-INF/spring.handles的文件，建立namespaceUri-处理类的映射
+			// 2：反射实例化处理类，然后调用NamespaceHandler处理类的init方法
+			// 3：调用NamespaceHandler处理类的decorate方法，开始具体装饰过程，并返回装饰的对象
 			bdHolder = delegate.decorateBeanDefinitionIfRequired(ele, bdHolder);
 			try {
 				// Register the final decorated instance.

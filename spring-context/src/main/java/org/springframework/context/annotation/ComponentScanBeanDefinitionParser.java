@@ -88,7 +88,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 	@Override
 	@Nullable
 	public BeanDefinition parse(Element element, ParserContext parserContext) {
-		// 获取basePackage属性
+		// 获取basePackage属性：要扫描的路径
 		String basePackage = element.getAttribute(BASE_PACKAGE_ATTRIBUTE);
 		basePackage = parserContext.getReaderContext().getEnvironment().resolvePlaceholders(basePackage);
 		// 可以用逗号分开
@@ -99,7 +99,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		// 创建扫描器
 		ClassPathBeanDefinitionScanner scanner = configureScanner(parserContext, element);
 
-		// + 扫描并把扫描的类分装成beanDefinition对象
+		// + 扫描并把扫描的类封装成beanDefinition对象
 		Set<BeanDefinitionHolder> beanDefinitions = scanner.doScan(basePackages);
 		registerComponents(parserContext.getReaderContext(), beanDefinitions, element);
 
@@ -138,6 +138,7 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 			parserContext.getReaderContext().error(ex.getMessage(), parserContext.extractSource(element), ex.getCause());
 		}
 
+		// + 这里会扫描两个子标签 include-filter 和 exclude-filter
 		parseTypeFilters(element, scanner, parserContext);
 
 		return scanner;
@@ -213,6 +214,10 @@ public class ComponentScanBeanDefinitionParser implements BeanDefinitionParser {
 		}
 	}
 
+	/**
+	 * 扫描两个子标签 include-filter 和 exclude-filter
+	 * 并把include-filter和exclude-filter对应的标签放入includeFilters和excludeFilters集合中
+	 */
 	protected void parseTypeFilters(Element element, ClassPathBeanDefinitionScanner scanner, ParserContext parserContext) {
 		// Parse exclude and include filter elements.
 		ClassLoader classLoader = scanner.getResourceLoader().getClassLoader();

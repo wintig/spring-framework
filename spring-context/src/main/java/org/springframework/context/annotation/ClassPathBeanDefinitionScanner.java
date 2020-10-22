@@ -164,7 +164,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 
 		// 使用默认的过滤器
 		if (useDefaultFilters) {
-			// @Service
+			// @Service	@Component
 			registerDefaultFilters();
 		}
 		setEnvironment(environment);
@@ -274,8 +274,9 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 	protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
 		Assert.notEmpty(basePackages, "At least one base package must be specified");
 		Set<BeanDefinitionHolder> beanDefinitions = new LinkedHashSet<>();
+		// 基本包可能会配置多个，所以这里使用了一个循环
 		for (String basePackage : basePackages) {
-			// 扫描到有注解的类，并封装成BeanDefinition对象
+			// 扫描到有注解的类，并把它封装成BeanDefinition对象
 			Set<BeanDefinition> candidates = findCandidateComponents(basePackage);
 			for (BeanDefinition candidate : candidates) {
 				ScopeMetadata scopeMetadata = this.scopeMetadataResolver.resolveScopeMetadata(candidate);
@@ -294,7 +295,7 @@ public class ClassPathBeanDefinitionScanner extends ClassPathScanningCandidateCo
 							AnnotationConfigUtils.applyScopedProxyMode(scopeMetadata, definitionHolder, this.registry);
 					beanDefinitions.add(definitionHolder);
 
-					// BeanDefinition注册
+					// + BeanDefinition注册
 					registerBeanDefinition(definitionHolder, this.registry);
 				}
 			}

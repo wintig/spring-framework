@@ -115,10 +115,12 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 	@Override
 	@Nullable
 	public NamespaceHandler resolve(String namespaceUri) {
-		// 获取spring中所有jar包里面的"META-INF/spring.handlers"文件，并且建立映射关系
+		// 获取spring中所有jar包里面的"/META-INF/spring.handlers"文件
+		// 并且建立uri-class的映射关系
 		Map<String, Object> handlerMappings = getHandlerMappings();
 
-		// 根据namespaceUri: http://www.springframework.org/schema/p，获取这个命名空间的处理类
+		// 根据namespaceUri=http://www.springframework.org/schema/p，获取这个命名空间的处理类
+		// 通过建立的uri-class的映射关系，通过一个namespaceUri就可以唯一的确定一个处理类
 		Object handlerOrClassName = handlerMappings.get(namespaceUri);
 		if (handlerOrClassName == null) {
 			return null;
@@ -167,13 +169,13 @@ public class DefaultNamespaceHandlerResolver implements NamespaceHandlerResolver
 						logger.trace("Loading NamespaceHandler mappings from [" + this.handlerMappingsLocation + "]");
 					}
 					try {
-						// 加载"META-INF/spring.handlers"文件过程
+						// 加载所有 "META-INF/spring.handlers"文件过程
 						Properties mappings =
 								PropertiesLoaderUtils.loadAllProperties(this.handlerMappingsLocation, this.classLoader);
 						if (logger.isTraceEnabled()) {
 							logger.trace("Loaded NamespaceHandler mappings: " + mappings);
 						}
-						// 所以"META-INF/spring.handlers"文件里面的内容建立映射关系
+						// 所以 "META-INF/spring.handlers" 文件里面的内容建立映射关系
 						handlerMappings = new ConcurrentHashMap<>(mappings.size());
 						CollectionUtils.mergePropertiesIntoMap(mappings, handlerMappings);
 						this.handlerMappings = handlerMappings;
