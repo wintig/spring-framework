@@ -540,26 +540,32 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
-				// 完成扫描和解析（类--->BeanDefinition）
+				// 这两个接口的调用 : BeanDefinitionRegistryProcessor BeanFactoryPostProcessor
+				// 在spring启动过程中对beanDefinition修改，实现了BeanDefinitionRegistryProcessor的类优先其他类实例化
 				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
+				// 把实现了BeanPostProcessors接口的类"实例化"，加入到BeanFactory中
 				registerBeanPostProcessors(beanFactory);
 
 				// Initialize message source for this context.
 				initMessageSource(); // 执行国际化处理
 
 				// Initialize event multicaster for this context.
-				initApplicationEventMulticaster();	// 初始化多波器
+				initApplicationEventMulticaster();	// 初始化事件管理器
 
 				// <null> Initialize other special beans in specific context subclasses.
+				// 模板设计模式，在spring boot中这个方法是用来内嵌tomcat启动的
 				onRefresh();
 
 				// Check for listener beans and register them.
-				registerListeners();  // 注册监听器到多波器
+				registerListeners();  // 往时间管理类中注册事件类
 
 				// Instantiate all remaining (non-lazy-init) singletons.
-				finishBeanFactoryInitialization(beanFactory); // 完成所有非懒加载的单例的实例化工作
+				/**
+				 * 完成所有非懒加载的单例的实例化工作
+				 */
+				finishBeanFactoryInitialization(beanFactory);
 
 				// Last step: publish corresponding event.
 				finishRefresh();
@@ -864,7 +870,9 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 	 * initializing all remaining singleton beans.
 	 */
 	protected void finishBeanFactoryInitialization(ConfigurableListableBeanFactory beanFactory) {
+
 		// Initialize conversion service for this context.
+		// - 设置类型转换器
 		if (beanFactory.containsBean(CONVERSION_SERVICE_BEAN_NAME) &&
 				beanFactory.isTypeMatch(CONVERSION_SERVICE_BEAN_NAME, ConversionService.class)) {
 			beanFactory.setConversionService(
@@ -891,7 +899,8 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.freezeConfiguration();
 
 		// Instantiate all remaining (non-lazy-init) singletons.
-		beanFactory.preInstantiateSingletons();	// * 实例化
+		// + 实例化
+		beanFactory.preInstantiateSingletons();
 	}
 
 	/**

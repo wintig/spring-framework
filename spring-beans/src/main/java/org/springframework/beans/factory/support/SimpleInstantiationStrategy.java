@@ -84,6 +84,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 					}
 				}
 			}
+			// 只会把构造函数传进去
 			return BeanUtils.instantiateClass(constructorToUse);
 		}
 		else {
@@ -145,6 +146,7 @@ public class SimpleInstantiationStrategy implements InstantiationStrategy {
 				});
 			}
 			else {
+				// 设置访问权限
 				ReflectionUtils.makeAccessible(factoryMethod);
 			}
 

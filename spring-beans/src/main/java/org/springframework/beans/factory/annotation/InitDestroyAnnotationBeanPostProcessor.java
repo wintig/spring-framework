@@ -146,6 +146,9 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+		// 返回了一个LifecycleMetadata生命周期元数据
+		// 1个目标对象
+		// 2个容器 init/destroy Methods
 		LifecycleMetadata metadata = findLifecycleMetadata(beanType);
 		metadata.checkConfigMembers(beanDefinition);
 	}
@@ -154,6 +157,7 @@ public class InitDestroyAnnotationBeanPostProcessor
 	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 		LifecycleMetadata metadata = findLifecycleMetadata(bean.getClass());
 		try {
+			// 调用@PostConstruct注解的方法
 			metadata.invokeInitMethods(bean, beanName);
 		}
 		catch (InvocationTargetException ex) {
@@ -197,6 +201,7 @@ public class InitDestroyAnnotationBeanPostProcessor
 
 
 	private LifecycleMetadata findLifecycleMetadata(Class<?> clazz) {
+		// 看缓存里面有没有
 		if (this.lifecycleMetadataCache == null) {
 			// Happens after deserialization, during destruction...
 			return buildLifecycleMetadata(clazz);
@@ -221,23 +226,29 @@ public class InitDestroyAnnotationBeanPostProcessor
 			return this.emptyLifecycleMetadata;
 		}
 
+		// 外层容器
 		List<LifecycleElement> initMethods = new ArrayList<>();
 		List<LifecycleElement> destroyMethods = new ArrayList<>();
 		Class<?> targetClass = clazz;
 
 		do {
+			// 循环找父类时候用的容器
 			final List<LifecycleElement> currInitMethods = new ArrayList<>();
 			final List<LifecycleElement> currDestroyMethods = new ArrayList<>();
 
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
+				// method.isAnnotationPresent就是判断方法上是否有指定注解 @PostConstruct
 				if (this.initAnnotationType != null && method.isAnnotationPresent(this.initAnnotationType)) {
 					LifecycleElement element = new LifecycleElement(method);
+					// 加到初始化的一个容器
 					currInitMethods.add(element);
 					if (logger.isTraceEnabled()) {
 						logger.trace("Found init method on class [" + clazz.getName() + "]: " + method);
 					}
 				}
+				// 发放上是否有@PreDestroy注解
 				if (this.destroyAnnotationType != null && method.isAnnotationPresent(this.destroyAnnotationType)) {
+					// 加到摧毁的一个容器
 					currDestroyMethods.add(new LifecycleElement(method));
 					if (logger.isTraceEnabled()) {
 						logger.trace("Found destroy method on class [" + clazz.getName() + "]: " + method);
@@ -251,6 +262,8 @@ public class InitDestroyAnnotationBeanPostProcessor
 		}
 		while (targetClass != null && targetClass != Object.class);
 
+		// 容器包装一下
+		// 目标对象。然后init，destroy的两个容器
 		return (initMethods.isEmpty() && destroyMethods.isEmpty() ? this.emptyLifecycleMetadata :
 				new LifecycleMetadata(clazz, initMethods, destroyMethods));
 	}

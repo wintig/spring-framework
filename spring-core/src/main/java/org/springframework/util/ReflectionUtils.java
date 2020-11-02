@@ -318,6 +318,7 @@ public abstract class ReflectionUtils {
 	 * @see #doWithMethods
 	 */
 	public static void doWithLocalMethods(Class<?> clazz, MethodCallback mc) {
+		// 拿到类里面的所有方法
 		Method[] methods = getDeclaredMethods(clazz, false);
 		for (Method method : methods) {
 			try {

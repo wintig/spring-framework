@@ -288,11 +288,21 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 		}
 	}
 
-
+	/**
+	 * 1、扫描类里面的属性或方法
+	 * 2、判断属性或方法上面是否有@PostConstruct @PreDestroy @Resource注解
+	 * 3、如果有注解的属性或方法，包装成一个类
+	 */
 	@Override
 	public void postProcessMergedBeanDefinition(RootBeanDefinition beanDefinition, Class<?> beanType, String beanName) {
+
+		// 扫描方法上是否有@PostConstruct @PreDestroy注解
 		super.postProcessMergedBeanDefinition(beanDefinition, beanType, beanName);
+
+		// 扫描@Resource，扫描属性和方法上是否有@Resource，如果有则收集起来封装成类
 		InjectionMetadata metadata = findResourceMetadata(beanName, beanType, null);
+
+		// 赋值
 		metadata.checkConfigMembers(beanDefinition);
 	}
 
@@ -336,6 +346,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 		// Fall back to class name as cache key, for backwards compatibility with custom callers.
 		String cacheKey = (StringUtils.hasLength(beanName) ? beanName : clazz.getName());
 		// Quick check on the concurrent map first, with minimal locking.
+		// 先从缓存里面拿
 		InjectionMetadata metadata = this.injectionMetadataCache.get(cacheKey);
 		if (InjectionMetadata.needsRefresh(metadata, clazz)) {
 			synchronized (this.injectionMetadataCache) {
@@ -344,8 +355,9 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 					if (metadata != null) {
 						metadata.clear(pvs);
 					}
+					// + 找类或者属性上@Resource方法
 					metadata = buildResourceMetadata(clazz);
-					this.injectionMetadataCache.put(cacheKey, metadata);
+					this.injectionMetadataCache.put(cacheKey, metadata);	// 放到缓存里面
 				}
 			}
 		}
@@ -362,7 +374,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 
 		do {
 			final List<InjectionMetadata.InjectedElement> currElements = new ArrayList<>();
-
+			// 拿到类上的所有属性，然后去循环
 			ReflectionUtils.doWithLocalFields(targetClass, field -> {
 				if (webServiceRefClass != null && field.isAnnotationPresent(webServiceRefClass)) {
 					if (Modifier.isStatic(field.getModifiers())) {
@@ -376,6 +388,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 					}
 					currElements.add(new EjbRefElement(field, field, null));
 				}
+				// 属性上是否有@Resource注解
 				else if (field.isAnnotationPresent(Resource.class)) {
 					if (Modifier.isStatic(field.getModifiers())) {
 						throw new IllegalStateException("@Resource annotation is not supported on static fields");
@@ -386,6 +399,7 @@ public class CommonAnnotationBeanPostProcessor extends InitDestroyAnnotationBean
 				}
 			});
 
+			// 扫描方法，和上面差不多
 			ReflectionUtils.doWithLocalMethods(targetClass, method -> {
 				Method bridgedMethod = BridgeMethodResolver.findBridgedMethod(method);
 				if (!BridgeMethodResolver.isVisibilityBridgeMethodPair(method, bridgedMethod)) {

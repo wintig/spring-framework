@@ -119,6 +119,7 @@ public class InjectionMetadata {
 	}
 
 	public void inject(Object target, @Nullable String beanName, @Nullable PropertyValues pvs) throws Throwable {
+		// checkedElements注解的属性和方法全部在这里面
 		Collection<InjectedElement> checkedElements = this.checkedElements;
 		Collection<InjectedElement> elementsToIterate =
 				(checkedElements != null ? checkedElements : this.injectedElements);
@@ -177,6 +178,7 @@ public class InjectionMetadata {
 	 */
 	public abstract static class InjectedElement {
 
+		// 可以是field也可以是method
 		protected final Member member;
 
 		protected final boolean isField;
@@ -236,6 +238,8 @@ public class InjectionMetadata {
 			if (this.isField) {
 				Field field = (Field) this.member;
 				ReflectionUtils.makeAccessible(field);
+				// target目标对象	getResourceToInject拿到依赖注入的值
+				// 然后反射去设置
 				field.set(target, getResourceToInject(target, requestingBeanName));
 			}
 			else {

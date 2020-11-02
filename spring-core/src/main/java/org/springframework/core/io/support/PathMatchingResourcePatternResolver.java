@@ -277,6 +277,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 	@Override
 	public Resource[] getResources(String locationPattern) throws IOException {
 		Assert.notNull(locationPattern, "Location pattern must not be null");
+		// 看看是不是classpath的前缀
 		if (locationPattern.startsWith(CLASSPATH_ALL_URL_PREFIX)) {
 			// a class path resource (multiple resources for same name possible)
 			if (getPathMatcher().isPattern(locationPattern.substring(CLASSPATH_ALL_URL_PREFIX.length()))) {
@@ -494,6 +495,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		Resource[] rootDirResources = getResources(rootDirPath);
 		Set<Resource> result = new LinkedHashSet<>(16);
 		for (Resource rootDirResource : rootDirResources) {
+			// 拿到类路径
 			rootDirResource = resolveRootDirResource(rootDirResource);
 			URL rootDirUrl = rootDirResource.getURL();
 			if (equinoxResolveMethod != null && rootDirUrl.getProtocol().startsWith("bundle")) {
@@ -730,6 +732,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		if (logger.isTraceEnabled()) {
 			logger.trace("Looking for matching resources in directory tree [" + rootDir.getPath() + "]");
 		}
+		// 寻找匹配的文件
 		Set<File> matchingFiles = retrieveMatchingFiles(rootDir, subPattern);
 		Set<Resource> result = new LinkedHashSet<>(matchingFiles.size());
 		for (File file : matchingFiles) {
@@ -775,6 +778,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		}
 		fullPattern = fullPattern + StringUtils.replace(pattern, File.separator, "/");
 		Set<File> result = new LinkedHashSet<>(8);
+		// + 递归寻找文件
 		doRetrieveMatchingFiles(fullPattern, rootDir, result);
 		return result;
 	}
@@ -795,6 +799,7 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 		}
 		for (File content : listDirectory(dir)) {
 			String currPath = StringUtils.replace(content.getAbsolutePath(), File.separator, "/");
+			// 如果是一个文件夹，并且和配置basePackage匹配，则递归
 			if (content.isDirectory() && getPathMatcher().matchStart(fullPattern, currPath + "/")) {
 				if (!content.canRead()) {
 					if (logger.isDebugEnabled()) {
@@ -806,8 +811,9 @@ public class PathMatchingResourcePatternResolver implements ResourcePatternResol
 					doRetrieveMatchingFiles(fullPattern, content, result);
 				}
 			}
+			// 如果不是文件，并且和配置basePackage匹配，则加入容器
 			if (getPathMatcher().match(fullPattern, currPath)) {
-				result.add(content);
+				result.add(content);	// content(file)是一个路径的.class文件
 			}
 		}
 	}

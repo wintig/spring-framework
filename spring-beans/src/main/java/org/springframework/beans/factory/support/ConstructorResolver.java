@@ -170,6 +170,7 @@ class ConstructorResolver {
 
 			if (candidates.length == 1 && explicitArgs == null && !mbd.hasConstructorArgumentValues()) {
 				Constructor<?> uniqueCandidate = candidates[0];
+				// 如果是无参构造函数
 				if (uniqueCandidate.getParameterCount() == 0) {
 					synchronized (mbd.constructorArgumentLock) {
 						mbd.resolvedConstructorOrFactoryMethod = uniqueCandidate;
@@ -191,6 +192,7 @@ class ConstructorResolver {
 				minNrOfArgs = explicitArgs.length;
 			}
 			else {
+				// 拿构造函数里面，我们自己配置的参数。现在用的应该很少了
 				ConstructorArgumentValues cargs = mbd.getConstructorArgumentValues();
 				resolvedValues = new ConstructorArgumentValues();
 				minNrOfArgs = resolveConstructorArguments(beanName, mbd, bw, cargs, resolvedValues);
@@ -214,6 +216,7 @@ class ConstructorResolver {
 				}
 
 				ArgumentsHolder argsHolder;
+				// 获取到构造函数的参数类型
 				Class<?>[] paramTypes = candidate.getParameterTypes();
 				if (resolvedValues != null) {
 					try {
@@ -221,9 +224,12 @@ class ConstructorResolver {
 						if (paramNames == null) {
 							ParameterNameDiscoverer pnd = this.beanFactory.getParameterNameDiscoverer();
 							if (pnd != null) {
+								// 获取到构造函数中的形参参数名称
+								// public 构造器(Student student)，拿到的就是student
 								paramNames = pnd.getParameterNames(candidate);
 							}
 						}
+						// -= 获取到参数的值
 						argsHolder = createArgumentArray(beanName, mbd, resolvedValues, bw, paramTypes, paramNames,
 								getUserDeclaredConstructor(candidate), autowiring, candidates.length == 1);
 					}
@@ -291,6 +297,8 @@ class ConstructorResolver {
 		}
 
 		Assert.state(argsToUse != null, "Unresolved constructor arguments");
+
+		// 有参构造函数的实例化，反射实例化
 		bw.setBeanInstance(instantiate(beanName, mbd, constructorToUse, argsToUse));
 		return bw;
 	}
@@ -392,6 +400,7 @@ class ConstructorResolver {
 	public BeanWrapper instantiateUsingFactoryMethod(
 			String beanName, RootBeanDefinition mbd, @Nullable Object[] explicitArgs) {
 
+		// - 反射实例会包装到BeanWrapperImpl，对象里面还会有一些编辑器，类型转化器
 		BeanWrapperImpl bw = new BeanWrapperImpl();
 		this.beanFactory.initBeanWrapper(bw);
 
@@ -399,16 +408,25 @@ class ConstructorResolver {
 		Class<?> factoryClass;
 		boolean isStatic;
 
-		String factoryBeanName = mbd.getFactoryBeanName();
+		/**
+		 * factory-bean：用于实例化工厂类
+		 * factory-method：用于调用工厂类方法
+		 *
+		 * 如果没有配置factory-bean，那么就说明factory-method的方法是在当前类里面的
+		 * 如果配置了factory-bean，就说明"构造方法"方法你去指定的类里面去找
+		 */
+		String factoryBeanName = mbd.getFactoryBeanName();	// 拿到factoryBeanName
 		if (factoryBeanName != null) {
 			if (factoryBeanName.equals(beanName)) {
 				throw new BeanDefinitionStoreException(mbd.getResourceDescription(), beanName,
 						"factory-bean reference points back to the same bean definition");
 			}
+			// 如果配置了factory-bean，那么先实例化这个类
 			factoryBean = this.beanFactory.getBean(factoryBeanName);
 			if (mbd.isSingleton() && this.beanFactory.containsSingleton(beanName)) {
 				throw new ImplicitlyAppearedSingletonException();
 			}
+			// 拿到类的class
 			factoryClass = factoryBean.getClass();
 			isStatic = false;
 		}
@@ -419,6 +437,7 @@ class ConstructorResolver {
 						"bean definition declares neither a bean class nor a factory-bean reference");
 			}
 			factoryBean = null;
+			// 如果没有配置factory-bean，那么factory-method就是当前类里面的一个属性
 			factoryClass = mbd.getBeanClass();
 			isStatic = true;
 		}
@@ -443,6 +462,7 @@ class ConstructorResolver {
 				}
 			}
 			if (argsToResolve != null) {
+				// - 对参数的解析
 				argsToUse = resolvePreparedArguments(beanName, mbd, bw, factoryMethodToUse, argsToResolve, true);
 			}
 		}
@@ -632,6 +652,7 @@ class ConstructorResolver {
 			}
 		}
 
+		// + instantiate：反射调用factoryMethod方法
 		bw.setBeanInstance(instantiate(beanName, mbd, factoryBean, factoryMethodToUse, argsToUse));
 		return bw;
 	}
@@ -785,6 +806,7 @@ class ConstructorResolver {
 							"] - did you specify the correct bean references as arguments?");
 				}
 				try {
+					// + 再这里把构造函数的参数解析出来了
 					Object autowiredArgument = resolveAutowiredArgument(
 							methodParam, beanName, autowiredBeanNames, converter, fallback);
 					args.rawArguments[paramIndex] = autowiredArgument;
@@ -872,6 +894,7 @@ class ConstructorResolver {
 	protected Object resolveAutowiredArgument(MethodParameter param, String beanName,
 			@Nullable Set<String> autowiredBeanNames, TypeConverter typeConverter, boolean fallback) {
 
+		// 拿到构造函数，参数的类型
 		Class<?> paramType = param.getParameterType();
 		if (InjectionPoint.class.isAssignableFrom(paramType)) {
 			InjectionPoint injectionPoint = currentInjectionPoint.get();
