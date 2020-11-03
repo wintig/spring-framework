@@ -1,8 +1,7 @@
-package com.wintig.Bean的注入方式;
+package com.wintig.bean扫描方式;
 
 import com.wintig.bean.Student;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class Annotation注入 {
 
