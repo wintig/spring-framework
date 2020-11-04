@@ -1,0 +1,12 @@
+
+- Pointcut（切点）：用来描述拦截类的哪些方法需要拦截（类 + 方法）
+@Pointcut("execution(public * com.wintig.service.*.*(..))")
+
+- Advice(通知/增强)：你写的增强代码
+
+- Aspect(切面) ：spring领域叫advisor，一类功能的增强的描述
+切面是由切点(Pointcut) + 增强(advice)组成，他既包括了横切逻辑的定义，也包括了连接点的定义
+
+- JointPoint ：拦截到的具体方法
+JointPoint封装了你拦截到方法的很多信息(入参/方法名称/反射的class对象)
+

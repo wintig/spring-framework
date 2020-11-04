@@ -18,7 +18,7 @@ public class AspectAnnotation {
             defaultImpl = com.xiangxue.jack.service.DataCheckImpl.class)
     private DataCheck dataCheck;*/
 
-    @Pointcut("execution(public * com.xiangxue.jack.service.*.*(..))")
+    @Pointcut("execution(public * com.wintig.service.*.*(..))")
     public void pc1(){}
 
     @Around("pc1()")

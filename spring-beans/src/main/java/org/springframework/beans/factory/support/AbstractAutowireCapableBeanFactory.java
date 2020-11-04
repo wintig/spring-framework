@@ -619,7 +619,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			// 依赖注入的核心方法，到这里对象已经被实例化出来了，自动注入就在这里
 			populateBean(beanName, mbd, instanceWrapper);
 
-			// bean实例化+ioc
+			// bean实例化+IOC
 			// 依赖注入完成后调用，这里会进行AOP，得到一个代理对象
 			exposedObject = initializeBean(beanName, exposedObject, mbd);
 		}
@@ -663,6 +663,7 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 		// Register bean as disposable.
 		try {
 			// 注册bean销毁时的类DisposableBeanAdapter，虽然进行了aop但是还是对原始的bean进行销毁的注册
+			// exposedObject是进行aop后的bean，但是这里的bean是对原始的bean进行销毁类的注册
 			registerDisposableBeanIfNecessary(beanName, bean, mbd);
 		}
 		catch (BeanDefinitionValidationException ex) {
@@ -992,6 +993,9 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			for (BeanPostProcessor bp : getBeanPostProcessors()) {
 				if (bp instanceof SmartInstantiationAwareBeanPostProcessor) {
 					SmartInstantiationAwareBeanPostProcessor ibp = (SmartInstantiationAwareBeanPostProcessor) bp;
+					// InstantiationAwareBeanPostProcessorAdapter 返回的是原始bean的引用
+					// AbstractAutoProxyCreator
+					// 在整个Spring中，默认就只有AbstractAutoProxyCreator真正意义上实现了getEarlyBeanReference方法，而该类就是用来进行AOP的。
 					exposedObject = ibp.getEarlyBeanReference(exposedObject, beanName);
 				}
 			}

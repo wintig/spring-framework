@@ -183,8 +183,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 		/**
 		 * 根据beanName从缓存中拿
 		 * 一级缓存：singletonObjects 必须实例化完成后，才会放入一级缓存
-		 * 二级缓存：earlySingletonObjects
-		 * 三级缓存：singletonFactories
+		 * 二级缓存：earlySingletonObjects 缓存的是早期的bean对象，表示bean的生命周期还没走完就把这个bean放入了earlySingletonObjects
+		 * 三级缓存：singletonFactories 缓存的是ObjectFactory对象工厂，用来创建某个对象的
 		 */
 
 		// 首先从一级缓存单例池里面去找
@@ -204,10 +204,15 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					// 从三级缓存中拿到对象工厂（为什么需要singletonFactories？）
 					ObjectFactory<?> singletonFactory = this.singletonFactories.get(beanName);
 					if (singletonFactory != null) {
-						// 从工厂中拿到对象
+
+						// 从singletonFactories根据beanName得到一个ObjectFactory，然后执行ObjectFactory，
+						// 也就是执行getEarlyBeanReference方法，此时会得到一个A原始对象经过AOP之后的代理对象，然后把该代理对象放入earlySingletonObjects中
 						singletonObject = singletonFactory.getObject();	// AOP代理
-						// 升级到二级缓存（为什么要升级？）
+
+						// 升级到二级缓存
+						// 因为三级缓存里面是一个对象工厂，获取的时候效率很低，需要循环postProcessor
 						this.earlySingletonObjects.put(beanName, singletonObject);
+
 						// 删除三级缓存
 						this.singletonFactories.remove(beanName);
 					}
@@ -280,8 +285,8 @@ public class DefaultSingletonBeanRegistry extends SimpleAliasRegistry implements
 					// bean实例化完成之后，从singletonsCurrentlyInCreation容器中移除标识
 					afterSingletonCreation(beanName);
 				}
-				// 将创建好的单例bean添加到单例池singletonObject一级缓存中
 				if (newSingleton) {
+					// 将创建好的单例bean添加到单例池singletonObject一级缓存中
 					addSingleton(beanName, singletonObject);
 				}
 			}
