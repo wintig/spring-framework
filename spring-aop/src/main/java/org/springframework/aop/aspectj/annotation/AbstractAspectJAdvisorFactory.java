@@ -131,6 +131,8 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 	@Nullable
 	protected static AspectJAnnotation<?> findAspectJAnnotationOnMethod(Method method) {
 		for (Class<?> clazz : ASPECTJ_ANNOTATION_CLASSES) {
+			// 找到Around方法上是否有Pointcut, Around, Before, After, AfterReturning, AfterThrowing注解
+			// 并把注解里面的信息封装成AspectJAnnotation对象，这样我们的注解就达到了和xml一样的效果
 			AspectJAnnotation<?> foundAnnotation = findAnnotation(method, (Class<Annotation>) clazz);
 			if (foundAnnotation != null) {
 				return foundAnnotation;
@@ -144,7 +146,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 		// 找的规则就是找注解的父注解，递归的方式去找，直到找到目标注解为止
 		A result = AnnotationUtils.findAnnotation(method, toLookFor);
 		if (result != null) {
-			// 把注解里面的信息解析出来，然后包装成AspectJAnnotation对象
+			// 把注解里面的基本信息解析出来，然后封装成AspectJAnnotation对象
 			return new AspectJAnnotation<>(result);
 		}
 		else {
@@ -193,6 +195,7 @@ public abstract class AbstractAspectJAdvisorFactory implements AspectJAdvisorFac
 
 		public AspectJAnnotation(A annotation) {
 			this.annotation = annotation;
+			// 确定注释类型，到底是Around，还是Before
 			this.annotationType = determineAnnotationType(annotation);
 			try {
 				// 解析注解上面的表达式如:

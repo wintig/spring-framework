@@ -1,6 +1,7 @@
 package com.wintig.bean扫描方式;
 
 import com.wintig.bean.Student;
+import com.wintig.service.UserService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class XML注入 {
@@ -11,7 +12,11 @@ public class XML注入 {
 
 		Student student = applicationContext.getBean(Student.class);
 
-		System.out.println(student);
+
+		UserService userService = applicationContext.getBean(UserService.class);
+
+		//userService.addUserInfo("111");
+		userService.queryUser("111");
 
 	}
 

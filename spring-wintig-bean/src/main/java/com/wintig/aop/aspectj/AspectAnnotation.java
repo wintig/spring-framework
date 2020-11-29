@@ -3,6 +3,7 @@ package com.wintig.aop.aspectj;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
@@ -21,15 +22,22 @@ public class AspectAnnotation {
     @Pointcut("execution(public * com.wintig.service.*.*(..))")
     public void pc1(){}
 
+	@Pointcut("execution(public * com.wintig.service.*.add*(..))")
+	public void pcAdd(){}
+
     @Around("pc1()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
-        System.out.println("==============AspectAnnotation around前置通知=========");
-        // 被代理方法
+        System.out.println("<<< around前置通知 >>>");
+		// 被代理方法
         Object result = joinPoint.proceed();
-        System.out.println("==============AspectAnnotation around后置通知=========");
-
+        System.out.println("<<< around后置通知 >>>");
         return result;
     }
+
+	@Before("pcAdd()")
+	public void before(){
+		System.out.println("== 只拦截Add方法 ==");
+	}
 
 
 /*    @Before(value = "@annotation(targetMethod)"*//*,argNames = "joinPoint,targetMethod"*//*)

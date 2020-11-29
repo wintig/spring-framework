@@ -76,6 +76,8 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 			Class<?> beanClass, String beanName, @Nullable TargetSource targetSource) {
 
 		// + 找到合格的切面
+		// 1：从spring中获取所有的切面
+		// 2：循环找和当前bean匹配的切面
 		List<Advisor> advisors = findEligibleAdvisors(beanClass, beanName);
 		if (advisors.isEmpty()) {
 			return DO_NOT_PROXY;
@@ -94,13 +96,14 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 	 * @see #extendAdvisors
 	 */
 	protected List<Advisor> findEligibleAdvisors(Class<?> beanClass, String beanName) {
-		// 找到候选的切面：其实就是一个寻找有@Aspectj注解的过程，把工程中所有有这个注解的类封装成Advice返回
+		// 找到候选(全部)的切面：其实就是一个寻找有@Aspectj注解的过程，把工程中所有有这个注解的类封装成Advice返回
 		List<Advisor> candidateAdvisors = findCandidateAdvisors();
 
-		//
+		// - 判断候选(全部)的切面是否作用在当前beanClass上面，就是一个模糊匹配过程
 		List<Advisor> eligibleAdvisors = findAdvisorsThatCanApply(candidateAdvisors, beanClass, beanName);
 		extendAdvisors(eligibleAdvisors);
 		if (!eligibleAdvisors.isEmpty()) {
+			// 对有Order @Priority进行排序
 			eligibleAdvisors = sortAdvisors(eligibleAdvisors);
 		}
 		return eligibleAdvisors;
@@ -129,6 +132,7 @@ public abstract class AbstractAdvisorAutoProxyCreator extends AbstractAutoProxyC
 
 		ProxyCreationContext.setCurrentProxiedBeanName(beanName);
 		try {
+			// 看看当前类是否在这些切面的pointCut中
 			return AopUtils.findAdvisorsThatCanApply(candidateAdvisors, beanClass);
 		}
 		finally {

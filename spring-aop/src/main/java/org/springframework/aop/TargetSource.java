@@ -33,6 +33,7 @@ import org.springframework.lang.Nullable;
  * @author Rod Johnson
  * @author Juergen Hoeller
  */
+// 封装被代理对象
 public interface TargetSource extends TargetClassAware {
 
 	/**
