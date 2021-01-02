@@ -1,6 +1,7 @@
 package com.wintig.bean扫描方式;
 
 import com.wintig.bean.Student;
+import com.wintig.processor.WintigBeanDefinitionRegistryPostProcessor;
 import com.wintig.service.UserService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 

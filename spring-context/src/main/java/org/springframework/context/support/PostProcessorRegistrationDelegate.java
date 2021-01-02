@@ -198,7 +198,7 @@ final class PostProcessorRegistrationDelegate {
 	public static void registerBeanPostProcessors(
 			ConfigurableListableBeanFactory beanFactory, AbstractApplicationContext applicationContext) {
 
-		// 拿到工程里所有实现了BeanPostProcessor接口的类，获取到BeanFactory的名称
+		// 拿到工厂里所有实现了BeanPostProcessor接口的类，获取到BeanFactory的名称
 		String[] postProcessorNames = beanFactory.getBeanNamesForType(BeanPostProcessor.class, true, false);
 
 		// Register BeanPostProcessorChecker that logs an info message when
@@ -236,6 +236,7 @@ final class PostProcessorRegistrationDelegate {
 
 		// First, register the BeanPostProcessors that implement PriorityOrdered.
 		sortPostProcessors(priorityOrderedPostProcessors, beanFactory);
+		// 注册到BeanFactory中
 		registerBeanPostProcessors(beanFactory, priorityOrderedPostProcessors);
 
 		// Next, register the BeanPostProcessors that implement Ordered.

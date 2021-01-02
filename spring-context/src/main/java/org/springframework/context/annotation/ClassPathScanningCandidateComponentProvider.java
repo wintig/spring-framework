@@ -430,7 +430,9 @@ public class ClassPathScanningCandidateComponentProvider implements EnvironmentC
 				}
 				if (resource.isReadable()) {
 					try {
-						// 封装了类的基本信息的对象，类上的所有信息都可以拿到（不清楚为什么要这玩意，不是有bd了吗？）
+						// MetadataReader封装了类的基本信息的对象
+						// 获取一个类上的信息，首先就会反应到使用反射；但是对于一个工程要反射所有的类，成本无疑太大了
+						// 使用使用ASM技术，直接读取字节码文件，然后把类信息封装成一个MetadataReader对象
 						MetadataReader metadataReader = getMetadataReaderFactory().getMetadataReader(resource);
 						// 如果类上面有includeFilters注解
 						if (isCandidateComponent(metadataReader)) {

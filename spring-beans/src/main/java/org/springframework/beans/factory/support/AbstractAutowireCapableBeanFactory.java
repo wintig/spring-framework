@@ -1212,8 +1212,8 @@ public abstract class AbstractAutowireCapableBeanFactory extends AbstractBeanFac
 			return obtainFromSupplier(instanceSupplier, beanName);
 		}
 
-		// <bean class="" id="" factory-method="实例化调用的方法">
-		// 如果有factoryMethodName属性，类就由我自己来实例化返回，然后交给spring管理
+		// <bean id="" factory-method="实例化调用的方法">，这里是没有class的
+		// factory-method会封装到bd的factoryMethodName里面，如果有factoryMethodName属性，类就由我自己来实例化返回，然后交给spring管理
 		// @Bean其实和factory-method的实现类似
 		if (mbd.getFactoryMethodName() != null) {
 			return instantiateUsingFactoryMethod(beanName, mbd, args);

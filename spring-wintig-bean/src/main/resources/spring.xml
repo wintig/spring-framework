@@ -3,7 +3,8 @@
 	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	   xmlns:context="http://www.springframework.org/schema/context"
 	   xmlns:aop="http://www.springframework.org/schema/aop"
-	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans
+	   http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
 
 	<context:component-scan base-package="com.wintig"/>
 
@@ -16,5 +17,20 @@
 
 	<!-- 开启注解aop -->
 	<aop:aspectj-autoproxy/>
+
+	<bean id="wintigFactoryMethodBean" class="com.wintig.bean.factoryMethod.WintigFactoryMethodBean" />
+	<!--(1) wintig这个类spring你别帮我干了，你让"factory-bean"的"factory-method方法干" -->
+	<bean id="wintig" factory-bean="wintigFactoryMethodBean" factory-method="getWintigBean" />
+	<!--(2) 这个实例化方法你先别干，让指定类中"factory-method"帮我干 -->
+	<bean id="wintigPlus" class="com.wintig.bean.factoryMethod.WintigPlus" factory-method="getWintigPlusBean" />
+
+	<!-- 基于xml解析配置文件 -->
+	<context:property-placeholder location="application.properties"/>
+	<bean id="mySQLPropertiesBean" class="com.wintig.bean.properties.MySQLPropertiesBean">
+		<!--使用占位符 -->
+		<property name="name" value="${MySQL.name}"/>
+		<property name="password" value="${MySQL.password}"/>
+	</bean>
+
 
 </beans>

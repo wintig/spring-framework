@@ -13,10 +13,6 @@ public class WintigBeanFactoryPostProcessor implements BeanFactoryPostProcessor 
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 
-		GenericBeanDefinition bd = (GenericBeanDefinition) beanFactory.getBeanDefinition("beanLifecycleService");
-
-		Class<?> beanClass = bd.getBeanClass();
-		System.out.println(beanClass);
 
 	}
 

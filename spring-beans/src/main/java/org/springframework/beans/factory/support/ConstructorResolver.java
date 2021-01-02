@@ -409,11 +409,13 @@ class ConstructorResolver {
 		boolean isStatic;
 
 		/**
-		 * factory-bean：用于实例化工厂类
-		 * factory-method：用于调用工厂类方法
+		 * 首先检查factory-method，如果配置了就告诉spring这个类你先别着急帮我帮我实例化，先让"factory-method"帮我看看，这时候就有2种情况：
 		 *
-		 * 如果没有配置factory-bean，那么就说明factory-method的方法是在当前类里面的
-		 * 如果配置了factory-bean，就说明"构造方法"方法你去指定的类里面去找
+		 * (1) 如果配置了factory-bean
+		 * 那么很好办，你就告诉我哪个人帮你创建了，那么我就调用"factory-bean"的"factory-method"帮你实例化
+		 *
+		 * (2) 没有配置factory-bean，但是配置了class
+		 * 这个实例化方法你先别干，"factory-method"帮我干，但是这个类是在让当前类中，而且必须要是static的，不然我调用不到
 		 */
 		String factoryBeanName = mbd.getFactoryBeanName();	// 拿到factoryBeanName
 		if (factoryBeanName != null) {
@@ -428,9 +430,12 @@ class ConstructorResolver {
 			}
 			// 拿到类的class
 			factoryClass = factoryBean.getClass();
+			// factory-method要为非静态方法
 			isStatic = false;
 		}
 		else {
+			// 如果你配置了factory-method，但是又没有找到factory-bean，并且你这个bean还没有class
+			// 那么就抛异常了
 			// It's a static factory method on the bean class.
 			if (!mbd.hasBeanClass()) {
 				throw new BeanDefinitionStoreException(mbd.getResourceDescription(), beanName,
@@ -439,6 +444,7 @@ class ConstructorResolver {
 			factoryBean = null;
 			// 如果没有配置factory-bean，那么factory-method就是当前类里面的一个属性
 			factoryClass = mbd.getBeanClass();
+			// factory-method必须要为静态
 			isStatic = true;
 		}
 
@@ -470,6 +476,7 @@ class ConstructorResolver {
 		if (factoryMethodToUse == null || argsToUse == null) {
 			// Need to determine the factory method...
 			// Try all methods with this name to see if they match the given arguments.
+			// 拿到工厂类
 			factoryClass = ClassUtils.getUserClass(factoryClass);
 
 			List<Method> candidates = null;
@@ -483,8 +490,10 @@ class ConstructorResolver {
 			}
 			if (candidates == null) {
 				candidates = new ArrayList<>();
+				// 拿到工厂类里面的所有方法
 				Method[] rawCandidates = getCandidateMethods(factoryClass, mbd);
 				for (Method candidate : rawCandidates) {
+					// 必须要是非静态方法 && 工厂类里面的"方法名"是否和当前正在实例化类的"factory-method"名字相同
 					if (Modifier.isStatic(candidate.getModifiers()) == isStatic && mbd.isFactoryMethod(candidate)) {
 						candidates.add(candidate);
 					}
