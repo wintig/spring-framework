@@ -19,6 +19,8 @@ public class XML注入 {
 		//userService.addUserInfo("111");
 		userService.queryUser("111");
 
+		// 销毁单例对象
+		applicationContext.getBeanFactory().destroySingletons();
 	}
 
 }

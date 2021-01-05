@@ -1,7 +1,5 @@
 package com.wintig.bean.properties;
 
-import com.wintig.bean.Student;
-import com.wintig.service.UserService;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class 配置文件测试 {

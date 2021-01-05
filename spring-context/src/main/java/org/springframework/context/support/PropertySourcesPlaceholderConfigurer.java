@@ -124,15 +124,18 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 	 * ignored</strong>. This method is designed to give the user fine-grained control over property
 	 * sources, and once set, the configurer makes no assumptions about adding additional sources.
 	 */
+	// 新版本参数解析
 	@Override
 	public void postProcessBeanFactory(ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		if (this.propertySources == null) {
 			this.propertySources = new MutablePropertySources();
 			if (this.environment != null) {
+				// 把environment对象封装成PropertySource对象加入到MutablePropertySource中的list
 				this.propertySources.addLast(
 					new PropertySource<Environment>(ENVIRONMENT_PROPERTIES_PROPERTY_SOURCE_NAME, this.environment) {
 						@Override
 						@Nullable
+						// source就是environment对象
 						public String getProperty(String key) {
 							return this.source.getProperty(key);
 						}
@@ -140,6 +143,7 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 				);
 			}
 			try {
+				// 加载本地配置文件中的属性值，包装成properties对象后，最终包装成PropertySource对象
 				PropertySource<?> localPropertySource =
 						new PropertiesPropertySource(LOCAL_PROPERTIES_PROPERTY_SOURCE_NAME, mergeProperties());
 				if (this.localOverride) {
@@ -169,6 +173,7 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 		propertyResolver.setPlaceholderSuffix(this.placeholderSuffix);
 		propertyResolver.setValueSeparator(this.valueSeparator);
 
+		// @Value的依赖注入会调过来
 		StringValueResolver valueResolver = strVal -> {
 			String resolved = (this.ignoreUnresolvablePlaceholders ?
 					propertyResolver.resolvePlaceholders(strVal) :
@@ -179,6 +184,7 @@ public class PropertySourcesPlaceholderConfigurer extends PlaceholderConfigurerS
 			return (resolved.equals(this.nullValue) ? null : resolved);
 		};
 
+		// 核心流程，把占位符${}替换成真正的值
 		doProcessProperties(beanFactoryToProcess, valueResolver);
 	}
 

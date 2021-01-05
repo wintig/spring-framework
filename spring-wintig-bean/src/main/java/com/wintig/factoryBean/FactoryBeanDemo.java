@@ -1,10 +1,9 @@
 package com.wintig.factoryBean;
 
-import com.wintig.bean.Student;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
-@Service
+@Component
 public class FactoryBeanDemo implements FactoryBean<Object> {
 
 	@Override

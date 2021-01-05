@@ -266,16 +266,18 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		List<BeanDefinitionHolder> configCandidates = new ArrayList<>();
 		// 如果使用xml解析，到这里的时候所有的类就已经解析
 		// 如果使用的是annotation方式解析，到这里只有基础的几个db和作为启动的注解类解析
-		String[] candidateNames = registry.getBeanDefinitionNames();
+		String[] candidateNames = registry.getBeanDefinitionNames(); 		// 获取所有的beanName
 
 		for (String beanName : candidateNames) {
 			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
+			// 如果有标识，标识bd不再处理[不太理解]
 			if (beanDef.getAttribute(ConfigurationClassUtils.CONFIGURATION_CLASS_ATTRIBUTE) != null) {
 				if (logger.isDebugEnabled()) {
 					logger.debug("Bean definition has already been processed as a configuration class: " + beanDef);
 				}
 			}
-			// 判断是否有@Configuration @Component @Bean注解
+			// 判断是否是候选的需要处理的beanDefinition，如果是则放入容器configCandidates
+			// 主要是判断是否有：@Configuration @Component @Bean注解。  如果有就说明是当前类需要处理的
 			else if (ConfigurationClassUtils.checkConfigurationClassCandidate(beanDef, this.metadataReaderFactory)) {
 				// 如果有注解，解析后加到容器中
 				configCandidates.add(new BeanDefinitionHolder(beanDef, beanName));
@@ -314,7 +316,7 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		}
 
 		// Parse each @Configuration class
-		// + @ComponentScan @Configuration 支撑
+		// + 候选BeanDefinition的解析器，@ComponentScan @Configuration支撑
 		ConfigurationClassParser parser = new ConfigurationClassParser(
 				this.metadataReaderFactory, this.problemReporter, this.environment,
 				this.resourceLoader, this.componentScanBeanNameGenerator, registry);
@@ -322,7 +324,8 @@ public class ConfigurationClassPostProcessor implements BeanDefinitionRegistryPo
 		Set<BeanDefinitionHolder> candidates = new LinkedHashSet<>(configCandidates);
 		Set<ConfigurationClass> alreadyParsed = new HashSet<>(configCandidates.size());
 		do {
-			// 封装bd
+			// 解析的核心流程
+			// 其实就是把类上面的特殊注解解析出来封装成BeanDefinition
 			parser.parse(candidates);
 			parser.validate();
 
